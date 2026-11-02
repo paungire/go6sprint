@@ -23,15 +23,14 @@ func MainHandler(w http.ResponseWriter, req *http.Request) {
 	curdir, _ := os.Getwd()
 	abspath, err := filepath.Abs(filepath.Join(filepath.Dir(curdir), INDEX_HTML))
 
-	file, err := os.ReadFile(abspath)
+	indexHTML, err := os.ReadFile(abspath)
 	if err != nil {
 		http.Error(w, fmt.Sprint("Ошибка чтения файла:", err), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	w.Write(file)
+	fmt.Fprint(w, string(indexHTML))
 }
 
 func UploadHandler(w http.ResponseWriter, req *http.Request) {
