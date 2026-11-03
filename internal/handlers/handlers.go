@@ -10,7 +10,7 @@ import (
 	"github.com/Yandex-Practicum/go1fl-sprint6-final/internal/service"
 )
 
-const INDEX_HTML = "../index.html"
+const INDEX_HTML = "./index.html"
 const FILE_NAME = "myFile"
 
 func MainHandler(w http.ResponseWriter, req *http.Request) {
