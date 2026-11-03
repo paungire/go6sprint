@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/Yandex-Practicum/go1fl-sprint6-final/internal/service"
 )
 
-const INDEX_HTML = "index.html"
+const INDEX_HTML = "../index.html"
 const FILE_NAME = "myFile"
 
 func MainHandler(w http.ResponseWriter, req *http.Request) {
@@ -20,20 +19,16 @@ func MainHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	curdir, _ := os.Getwd()
-	abspath, err := filepath.Abs(filepath.Join(filepath.Dir(curdir), INDEX_HTML))
-
-	indexHTML, err := os.ReadFile(abspath)
-	if err != nil {
-		http.Error(w, fmt.Sprint("Ошибка чтения файла:", err), http.StatusInternalServerError)
-		return
-	}
-
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprint(w, string(indexHTML))
+	http.ServeFile(w, req, INDEX_HTML)
 }
 
 func UploadHandler(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		http.Error(w, fmt.Sprintf("Сервер не поддерживает %s запросы", req.Method), http.StatusMethodNotAllowed)
+		return
+	}
+
 	file, _, err := req.FormFile(FILE_NAME)
 	if err != nil {
 		http.Error(w, fmt.Sprint("Ошибка при получении файла:", err), http.StatusBadRequest)
@@ -55,7 +50,11 @@ func UploadHandler(w http.ResponseWriter, req *http.Request) {
 	defer resFile.Close()
 
 	res := service.Convert(text)
-	resFile.WriteString(res)
+	_, err = resFile.WriteString(res)
+	if err != nil {
+		http.Error(w, fmt.Sprint("Ошибка при написании ответа:", err), http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(res))
